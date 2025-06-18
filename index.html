@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check-in Hằng Ngày</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: #ffffffcc;
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #00796b;
+    }
+
+    label {
+      margin-top: 10px;
+      display: block;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #00796b;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      width: 100%;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    .success-animation {
+      display: none;
+      font-size: 20px;
+      color: green;
+      text-align: center;
+      margin-top: 20px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .clock {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .logo {
+      max-width: 160px;
+      margin: 0 auto 20px;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: none;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      input, select, textarea, button {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Thay logo công ty tại đây -->
+  <img src="SLL_ Logo_Official.png" class="logo" alt="Logo Sông Lô Land">
+
+  <div class="clock" id="clock"></div>
+
+  <div class="container">
+    <h2>Check-in Công Việc</h2>
+    <form id="checkinForm">
+      <label>Họ và Tên:</label>
+      <input type="text" id="name" required>
+
+      <label>Phòng Ban:</label>
+      <input type="text" id="department" required>
+
+      <label>Hoạt Động Hôm Nay:</label>
+      <textarea id="task" required></textarea>
+
+      <label>Trạng Thái:</label>
+      <select id="status">
+        <option>Online</option>
+        <option>Offline (đi thị trường)</option>
+        <option>Offline (làm việc từ xa)</option>
+      </select>
+
+      <label>Ghi chú:</label>
+      <textarea id="note"></textarea>
+
+      <button type="submit">Gửi Check-in</button>
+    </form>
+
+    <div class="success-animation" id="success">✅ <span id="displayName"></span> đã check-in thành công!</div>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('vi-VN');
+      const date = now.toLocaleDateString('vi-VN');
+      document.getElementById('clock').innerText = `🕒 ${time} - ${date}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedName = localStorage.getItem('checkin_name');
+      if (savedName) {
+        document.getElementById('name').value = savedName;
+      }
+    });
+
+    document.getElementById("checkinForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      localStorage.setItem('checkin_name', name);
+      const data = {
+        name: name,
+        department: document.getElementById("department").value,
+        task: document.getElementById("task").value,
+        status: document.getElementById("status").value,
+        note: document.getElementById("note").value
+      };
+      fetch("https://script.google.com/macros/s/AKfycbx5GZXailNSRIOOswDEfkIILLdtvpL2qsVrmxm62PNMU5pPfObHf7upO21jUZl-snol/exec", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(response => {
+        document.getElementById("displayName").innerText = name;
+        document.getElementById("success").style.display = 'block';
+        document.getElementById("checkinForm").reset();
+        setTimeout(() => {
+          document.getElementById("success").style.display = 'none';
+        }, 5000);
+      })
+      .catch(err => {
+        alert("❌ Gửi thất bại. Vui lòng thử lại!");
+      });
+    });
+  </script>
+</body>
+</html>
